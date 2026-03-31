@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dinosaurs World</title>
+<style>
+  body { font-family: Arial, sans-serif; margin:0; background:#f0f8ff; color:#333; }
+  header { background:#4caf50; color:white; text-align:center; padding:30px 0; }
+  header h1 { margin:0; font-size:2.5em; }
+  .content { max-width:1200px; margin:30px auto; padding:0 20px; display:grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap:20px; }
+  .dino-card { background:white; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.1); padding:20px; text-align:center; transition: transform 0.3s; cursor:pointer; }
+  .dino-card:hover { transform: scale(1.05); }
+  .dino-card img { width:100%; border-radius:10px; height:180px; object-fit:cover; }
+  footer { text-align:center; padding:20px; background:#4caf50; color:white; margin-top:40px; }
+  /* Modal for full-size image */
+  .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; overflow:auto; background-color: rgba(0,0,0,0.8); }
+  .modal-content { margin:5% auto; display:block; max-width:80%; border-radius:10px; }
+  .modal-content img { width:100%; border-radius:10px; }
+  .close { position:absolute; top:20px; right:35px; color:white; font-size:40px; font-weight:bold; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Dinosaurs World 🦖</h1>
+</header>
+
+<div class="content" id="dino-container">
+  <!-- Dinosaur cards will appear here -->
+</div>
+
+<!-- Modal -->
+<div id="modal" class="modal">
+  <span class="close" id="modal-close">&times;</span>
+  <div class="modal-content">
+    <img id="modal-img" src="" alt="">
+    <h2 id="modal-name" style="color:white;text-align:center;"></h2>
+    <p id="modal-desc" style="color:white;text-align:center;"></p>
+  </div>
+</div>
+
+<footer>
+  &copy; 2026 Dinosaurs World. All Rights Reserved.
+</footer>
+
+<script>
+const dinosaurs = [
+  {name:"Tyrannosaurus Rex", img:"https://upload.wikimedia.org/wikipedia/commons/1/1e/Tyrannosaurus_Rex_Holotype.jpg", desc:"One of the largest land predators."},
+  {name:"Triceratops", img:"https://upload.wikimedia.org/wikipedia/commons/3/3d/Triceratops_BW.jpg", desc:"Three-horned herbivore."},
+  {name:"Velociraptor", img:"https://upload.wikimedia.org/wikipedia/commons/5/5f/Velociraptor_dinoguy2.jpg", desc:"Small, fast predator."},
+  {name:"Stegosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/4/4d/Stegosaurus_BW.jpg", desc:"Plated herbivore with spiked tail."},
+  {name:"Brachiosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/6/6e/Brachiosaurus_DB.jpg", desc:"Giant long-neck dinosaur."},
+  {name:"Ankylosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/1/18/Ankylosaurus_dinosaur.jpg", desc:"Armored dinosaur with club tail."},
+  {name:"Spinosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/5/56/Spinosaurus_BW.jpg", desc:"Semi-aquatic predator with sail."},
+  {name:"Allosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/f/f1/Allosaurus_BW.jpg", desc:"Top Jurassic predator."},
+  {name:"Apatosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/3/3b/Apatosaurus_louisae.jpg", desc:"Large long-neck sauropod."},
+  {name:"Diplodocus", img:"https://upload.wikimedia.org/wikipedia/commons/8/8d/Diplodocus_BW.jpg", desc:"Whip-tailed long neck dinosaur."},
+  {name:"Iguanodon", img:"https://upload.wikimedia.org/wikipedia/commons/b/b4/Iguanodon_BW.jpg", desc:"Early herbivore with thumb spike."},
+  {name:"Carnotaurus", img:"https://upload.wikimedia.org/wikipedia/commons/7/74/Carnotaurus_BW.jpg", desc:"Horned meat-eater."},
+  {name:"Parasaurolophus", img:"https://upload.wikimedia.org/wikipedia/commons/a/a7/Parasaurolophus_BW.jpg", desc:"Crested duck-billed dinosaur."},
+  {name:"Pachycephalosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/2/27/Pachycephalosaurus_BW.jpg", desc:"Dome-headed plant-eater."},
+  {name:"Oviraptor", img:"https://upload.wikimedia.org/wikipedia/commons/0/01/Oviraptor_BW.jpg", desc:"Bird-like dinosaur once thought egg-stealer."},
+  {name:"Deinonychus", img:"https://upload.wikimedia.org/wikipedia/commons/a/a8/Deinonychus_BW.jpg", desc:"Fast, sickle-clawed predator."},
+  {name:"Therizinosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/9/96/Therizinosaurus_BW.jpg", desc:"Huge claws and feathered arms."},
+  {name:"Giganotosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/c/c6/Giganotosaurus_BW.jpg", desc:"Very large South American predator."},
+  {name:"Styracosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/8/82/Styracosaurus_BW.jpg", desc:"Frilled herbivore with spikes."},
+  {name:"Megalosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/d/d5/Megalosaurus_BW.jpg", desc:"One of the first named dinosaurs."},
+  {name:"Dimetrodon", img:"https://upload.wikimedia.org/wikipedia/commons/c/cb/Dimetrodon_BW.jpg", desc:"Sail-backed ancient reptile (not a dinosaur)."},
+  {name:"Compsognathus", img:"https://upload.wikimedia.org/wikipedia/commons/8/85/Compsognathus_BW.jpg", desc:"Small chicken-sized dinosaur."},
+  {name:"Hadrosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/5/50/Hadrosaurus_BW.jpg", desc:"Duck-billed dinosaur."},
+  {name:"Saurolophus", img:"https://upload.wikimedia.org/wikipedia/commons/9/9a/Saurolophus_BW.jpg", desc:"Crested duck-billed herbivore."},
+  {name:"Corythosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/f/fb/Corythosaurus_BW.jpg", desc:"Helmet-crested plant-eater."},
+  {name:"Gallimimus", img:"https://upload.wikimedia.org/wikipedia/commons/2/2e/Gallimimus_BW.jpg", desc:"Fast ostrich-like dinosaur."},
+  {name:"Troodon", img:"https://upload.wikimedia.org/wikipedia/commons/9/99/Troodon_BW.jpg", desc:"Intelligent, small predator."},
+  {name:"Utahraptor", img:"https://upload.wikimedia.org/wikipedia/commons/2/27/Utahraptor_BW.jpg", desc:"Large raptor with big claws."},
+  {name:"Albertosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/f/f7/Albertosaurus_BW.jpg", desc:"Smaller tyrant-relative predator."},
+  {name:"Barosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/0/03/Barosaurus_BW.jpg", desc:"Very long neck sauropod."},
+  {name:"Camarasaurus", img:"https://upload.wikimedia.org/wikipedia/commons/6/64/Camarasaurus_BW.jpg", desc:"Chunky long-neck herbivore."},
+  {name:"Edmontosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/d/d0/Edmontosaurus_BW.jpg", desc:"Large duck-billed herbivore."},
+  {name:"Monoclonius", img:"https://upload.wikimedia.org/wikipedia/commons/7/76/Monoclonius_BW.jpg", desc:"Ceratopsian with small frill."},
+  {name:"Ouranosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/7/7a/Ouranosaurus_BW.jpg", desc:"Herbivore with sail on back."},
+  {name:"Plateosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/3/32/Plateosaurus_BW.jpg", desc:"Early long-neck dinosaur."},
+  {name:"Protoceratops", img:"https://upload.wikimedia.org/wikipedia/commons/1/16/Protoceratops_BW.jpg", desc:"Small horned herbivore."},
+  {name:"Rhabdodon", img:"https://upload.wikimedia.org/wikipedia/commons/2/28/Rhabdodon_BW.jpg", desc:"Stout plant-eater."},
+  {name:"Saltasaurus", img:"https://upload.wikimedia.org/wikipedia/commons/d/d2/Saltasaurus_BW.jpg", desc:"Armored sauropod."},
+  {name:"Sinoceratops", img:"https://upload.wikimedia.org/wikipedia/commons/8/8b/Sinoceratops_BW.jpg", desc:"Asian horned dinosaur."},
+  {name:"Theropoda (Group)", img:"https://upload.wikimedia.org/wikipedia/commons/3/37/Theropod_BW.jpg", desc:"Group including many meat-eaters."},
+  {name:"Tropeognathus", img:"https://upload.wikimedia.org/wikipedia/commons/5/5d/Tropeognathus_BW.jpg", desc:"Flying reptile (pterosaur)."},
+  {name:"Velafrons", img:"https://upload.wikimedia.org/wikipedia/commons/6/61/Velafrons_BW.jpg", desc:"Crested duck-billed dinosaur."},
+  {name:"Yangchuanosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/4/4f/Yangchuanosaurus_BW.jpg", desc:"Large Jurassic predator."},
+  {name:"Zalmoxes", img:"https://upload.wikimedia.org/wikipedia/commons/c/c7/Zalmoxes_BW.jpg", desc:"Small herbivore from Europe."},
+  {name:"Beipiaosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/2/23/Beipiaosaurus_BW.jpg", desc:"Feathered dinosaur."},
+  {name:"Concavenator", img:"https://upload.wikimedia.org/wikipedia/commons/3/32/Concavenator_BW.jpg", desc:"Big carnivore with hump."},
+  {name:"Dryosaurus", img:"https://upload.wikimedia.org/wikipedia/commons/9/97/Dryosaurus_BW.jpg", desc:"Small plant-eater."},
+  {name:"Eoraptor", img:"https://upload.wikimedia.org/wikipedia/commons/4/49/Eoraptor_BW.jpg", desc:"One of the earliest dinosaurs."}
+];
+
+const container = document.getElementById("dino-container");
+const modal = document.getElementById("modal");
+const modalImg = document.getElementById("modal-img");
+const modalName = document.getElementById("modal-name");
+const modalDesc = document.getElementById("modal-desc");
+const modalClose = document.getElementById("modal-close");
+
+dinosaurs.forEach(dino => {
+  const card = document.createElement("div");
+  card.className = "dino-card";
+  card.innerHTML = `<img src="${dino.img}" alt="${dino.name}"><h3>${dino.name}</h3><p>${dino.desc}</p>`;
+  card.onclick = () => {
+    modal.style.display = "block";
+    modalImg.src = dino.img;
+    modalName.innerText = dino.name;
+    modalDesc.innerText = dino.desc;
+  };
+  container.appendChild(card);
+});
+
+modalClose.onclick = () => { modal.style.display = "none"; };
+window.onclick = e => { if(e.target == modal) modal.style.display = "none"; };
+</script>
+
+</body>
+</html>
